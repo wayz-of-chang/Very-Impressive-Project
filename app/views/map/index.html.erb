@@ -1,0 +1,42 @@
+<div id="map">
+<nav class="navbar navbar-default" role="navigation" style="position:fixed; z-index: 1000; margin-left:50px; background:none; border:none; box-shadow:none;">
+  <div class="container-fluid">
+  <div class="navbar-header">
+    <span class="sr-only">Controls</span>
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#nav-content"
+	  <span class="icon-bar"></span>
+	  <span class="icon-bar"></span>
+	  <span class="icon-bar"></span>
+	</button>
+  </div>
+  
+  <div class="collapse navbar-collapse" id="nav-content">
+	<form class="navbar-form navbar-left" role="search">
+	  <div class="form-group">
+    <ul class="nav navbar-nav">
+	  <li class="dropdown">
+	    <input type="text" class="form-control" data-toggle="dropdown" placeholder="Airline" name="airline" id="airline" autocomplete="off">
+        <ul class="dropdown-menu" id="airline_options">		
+		    <li><a href="" onclick="$('#airline').val(this.innerHTML); return false;">All (Default)</a></li>
+		  <% @airlines.each do |airline| %>
+		    <li><a href="" onclick="$('#airline').val(this.innerHTML); return false;"><%= airline.name %> (<%= airline.iata %>)</a></li>
+	      <% end %>
+		</ul>
+	  </li>
+	</ul>
+	  </div>
+	  <div class="form-group">
+    <ul class="nav navbar-nav">
+	  <li class="dropdown">
+	    <input type="text" class="form-control" data-toggle="dropdown" placeholder="City" name="city" id="city" autocomplete="off">
+        <ul class="dropdown-menu" id="city_options">		
+		</ul>
+	  </li>
+	</ul>
+	  </div>
+	  <button type="submit" class="btn btn-default" onclick="retrieveMap(); return false;">Submit</button>
+	  &nbsp;<i class="icon-spinner icon-spin icon-large fade" id="loading" ></i>
+	</form>
+  </div>
+  </div>
+</nav>

@@ -1,0 +1,13 @@
+@import "bootstrap";
+@import "bootstrap/theme";
+
+html {
+  height:100%;
+  width:100%;
+}
+
+body, #map {
+  height:inherit;
+  width:inherit;
+  float:none;
+}
