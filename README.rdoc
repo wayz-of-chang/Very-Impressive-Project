@@ -1,28 +1,28 @@
-== README
+== Description
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+This is a Rails 4.0 Application that hosts a flight map, with airlines, airports, and routes displayed on a world map.
 
-Things you may want to cover:
+== Set Up
 
-* Ruby version
+To get this working, 
 
-* System dependencies
+Install Ruby (1.9.3) and Rails 4.0 (http://rubyonrails.org/).
+Install a SQL Database.  By default, I am using MySQL (http://www.mysql.com/).
+Set up the database by loading data found from OpenFlights (http://openflights.org/data.html).
+Pull this project.
+Navigate to the project root directory, and run rails s -e production.
 
-* Configuration
+== Credits
 
-* Database creation
+Ruby on Rails 4.0 - MVC Framework (http://rubyonrails.org/)
+MySQL - Database (http://www.mysql.com/)
+MapQuest - Map Tiles (http://www.mapquest.com/)
+OpenLayers - Javascript Library (http://openlayers.org/)
+jQuery - Javascript Library (http://jquery.com/)
+Bootstrap - CSS Library (http://getbootstrap.com/)
+Font Awesome - CSS Library (http://fortawesome.github.io/Font-Awesome/)
 
-* Database initialization
+== Troubleshooting
 
-* How to run the test suite
+Coming soon...
 
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
-
-
-Please feel free to use a different markup language if you do not plan to run
-<tt>rake doc:app</tt>.
