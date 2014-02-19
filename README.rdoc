@@ -6,21 +6,21 @@ This is a Rails 4.0 Application that hosts a flight map, with airlines, airports
 
 To get this working, 
 
-Install Ruby (1.9.3) and Rails 4.0 (http://rubyonrails.org/).
-Install a SQL Database.  By default, I am using MySQL (http://www.mysql.com/).
-Set up the database by loading data found from OpenFlights (http://openflights.org/data.html).
-Pull this project.
-Navigate to the project root directory, and run rails s -e production.
+* Install Ruby (1.9.3) and Rails 4.0 (http://rubyonrails.org/).
+* Install a SQL Database.  By default, I am using MySQL (http://www.mysql.com/).
+* Set up the database by loading data found from OpenFlights (http://openflights.org/data.html).
+* Pull this project.
+* Navigate to the project root directory, and run rails s -e production.
 
 == Credits
 
-Ruby on Rails 4.0 - MVC Framework (http://rubyonrails.org/)
-MySQL - Database (http://www.mysql.com/)
-MapQuest - Map Tiles (http://www.mapquest.com/)
-OpenLayers - Javascript Library (http://openlayers.org/)
-jQuery - Javascript Library (http://jquery.com/)
-Bootstrap - CSS Library (http://getbootstrap.com/)
-Font Awesome - CSS Library (http://fortawesome.github.io/Font-Awesome/)
+* Ruby on Rails 4.0 - MVC Framework (http://rubyonrails.org/)
+* MySQL - Database (http://www.mysql.com/)
+* MapQuest - Map Tiles (http://www.mapquest.com/)
+* OpenLayers - Javascript Library (http://openlayers.org/)
+* jQuery - Javascript Library (http://jquery.com/)
+* Bootstrap - CSS Library (http://getbootstrap.com/)
+* Font Awesome - CSS Library (http://fortawesome.github.io/Font-Awesome/)
 
 == Troubleshooting
 
