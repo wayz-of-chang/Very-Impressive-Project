@@ -13,29 +13,25 @@
   <div class="collapse navbar-collapse" id="nav-content">
 	<form class="navbar-form navbar-left" role="search">
 	  <div class="form-group">
-    <ul class="nav navbar-nav">
-	  <li class="dropdown">
-	    <input type="text" class="form-control" data-toggle="dropdown" placeholder="Airline" name="airline" id="airline" autocomplete="off">
+	    <div class="input-group" id="airline_dropdown">
+	    <input type="text" class="form-control" placeholder="Airline" name="airline" id="airline" autocomplete="off" data-toggle="dropdown">
         <ul class="dropdown-menu" id="airline_options">		
 		    <li><a href="" onclick="$('#airline').val(this.innerHTML); return false;">All (Default)</a></li>
 		  <% @airlines.each do |airline| %>
 		    <li><a href="" onclick="$('#airline').val(this.innerHTML); return false;"><%= airline.name %> (<%= airline.iata %>)</a></li>
 	      <% end %>
 		</ul>
-	  </li>
-	</ul>
+		</div>
 	  </div>
 	  <div class="form-group">
-    <ul class="nav navbar-nav">
-	  <li class="dropdown">
-	    <input type="text" class="form-control" data-toggle="dropdown" placeholder="City" name="city" id="city" autocomplete="off">
+	    <div class="input-group" id="city_dropdown">
+	    <input type="text" class="form-control" placeholder="City" name="city" id="city" autocomplete="off" data-toggle="dropdown">
         <ul class="dropdown-menu" id="city_options">		
 		</ul>
-	  </li>
-	</ul>
+		</div>
 	  </div>
 	  <button type="submit" class="btn btn-default" onclick="retrieveMap(); return false;">Submit</button>
-	  &nbsp;<i class="icon-spinner icon-spin icon-large fade" id="loading" ></i>
+	  <i class="icon-spinner icon-spin icon-large fade" id="loading" ></i>
 	</form>
   </div>
   </div>

@@ -5,12 +5,14 @@ var cities;
 var flights;
 var timezones;
 
+var xhr_list = {};
+
 function init() {
 	var extent = new OpenLayers.Bounds(-180, -90, 180, 90);
 
     map = new OpenLayers.Map({
       div: "map",
-	  layers: [new OpenLayers.Layer.OSM("Map Quest", "/assets/tiles/${z}/${x}/${y}.png", {
+	  layers: [new OpenLayers.Layer.OSM("Map Quest", "/tiles/${z}/${x}/${y}.png", {
 		resolutions: [156543.03390625, 78271.516953125, 39135.7584765625,
                       19567.87923828125, 9783.939619140625, 4891.9698095703125,
                       2445.9849047851562, 1222.9924523925781, 611.4962261962891],
@@ -55,7 +57,7 @@ function init() {
 
     cities = new OpenLayers.Layer.Vector( "Cities", {
 		styleMap: new OpenLayers.StyleMap({
-		  externalGraphic: '/assets/img/marker.png',
+		  externalGraphic: '/img/marker.png',
 		  graphicWidth: 20, graphicHeight: 24, graphicYOffset: -24,
 		  strokeColor: "red",
 		  title: '${tooltip}'})});
@@ -103,7 +105,9 @@ function init() {
 	  if(evt.which < 32) 
 	    return false;
       $('#loading').addClass('in');
-	  $.ajax({url: '/map/list', 
+	  if(xhr_list['airline_list'] && xhr_list['airline_list'].readyState != 4)
+	    xhr_list['airline_list'].abort();
+	  xhr_list['airline_list'] = $.ajax({url: '/map/list', 
 	    type: "POST",
 		dataType: "json",
 		data: { input: $("#airline").val(), 
@@ -121,7 +125,9 @@ function init() {
 	  if(evt.which < 32) 
 	    return false;
       $('#loading').addClass('in');
-	  $.ajax({url: '/map/list', 
+	  if(xhr_list['city_list'] && xhr_list['city_list'].readyState != 4)
+	    xhr_list['city_list'].abort();
+	  xhr_list['city_list'] = $.ajax({url: '/map/list', 
 	    type: "POST",
 		dataType: "json",
 		data: { input: $("#city").val(), 
@@ -134,11 +140,24 @@ function init() {
 	    console.log("Error Encountered When Retrieving Airport List");
 	  });
 	});
+	
+	$("#airline").click(function(evt) {
+		$("#airline_dropdown").addClass("open");
+		evt.stopPropagation();
+	});
+	
+	$("#city").click(function(evt) {
+		$("#city_dropdown").addClass("open");
+		evt.stopPropagation();
+	});
+	
 }
 
 function retrieveMap() {
   $('#loading').addClass('in');
-  $.ajax({url: '/map/populate_map', 
+  if(xhr_list['route_map'] && xhr_list['route_map'].readyState != 4)
+    xhr_list['route_map'].abort();
+  xhr_list['route_map'] = $.ajax({url: '/map/populate_map', 
     type: "POST",
 	dataType: "json",
 	data: { airline: $("#airline").val(), 
