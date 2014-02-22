@@ -1,7 +1,8 @@
 require 'pp'
 class MapController < ApplicationController
   def index
-    @airlines = Airline.where(:active=>'Y').where.not(:iata=>'').where.not(:iata=>'-').order(:name)
+    @airlines = Airline.where(:active=>'Y').where.not(:iata=>'').where.not(:iata=>'-').order(:name).limit(100)
+	@cities = Airport.group(:longitude, :latitude).limit(100)
   end
   
   def find_airline(airline)

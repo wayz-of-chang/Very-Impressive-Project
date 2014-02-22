@@ -57,9 +57,17 @@ function init() {
 
     cities = new OpenLayers.Layer.Vector( "Cities", {
 		styleMap: new OpenLayers.StyleMap({
-		  externalGraphic: '/img/marker.png',
-		  graphicWidth: 20, graphicHeight: 24, graphicYOffset: -24,
-		  strokeColor: "red",
+		  //externalGraphic: '/img/marker.png',
+		  //graphicWidth: 20, graphicHeight: 24, graphicYOffset: -24,
+		  label: "\uf072",
+		  fontFamily: "FontAwesome",
+		  fontSize: 24,
+		  fontColor: "red",
+		  strokeColor: "blue",
+		  pointRadius: 10,
+		  fillOpacity: 0,
+		  strokeOpacity: 0,
+		  cursor: "pointer",
 		  title: '${tooltip}'})});
     //cities.addFeatures([new OpenLayers.Feature.Vector(location, {tooltip: 'marker'})]);
 	flights = new OpenLayers.Layer.Vector("Flights");
@@ -105,8 +113,9 @@ function init() {
 	flights.events.on({featureselected: showFlightPopup});
 	
 	$("#airline").keyup(function (evt) {
-	  if(evt.which < 32) 
+	  if(evt.which < 32 && evt.which != 8) 
 	    return false;
+	  $("#airline_dropdown").addClass("open");
       $('#loading').addClass('in');
 	  if(xhr_list['airline_list'] && xhr_list['airline_list'].readyState != 4)
 	    xhr_list['airline_list'].abort();
@@ -125,8 +134,9 @@ function init() {
 	});
 
 	$("#city").keyup(function (evt) {
-	  if(evt.which < 32) 
+	  if(evt.which < 32 && evt.which != 8) 
 	    return false;
+	  $("#city_dropdown").addClass("open");
       $('#loading').addClass('in');
 	  if(xhr_list['city_list'] && xhr_list['city_list'].readyState != 4)
 	    xhr_list['city_list'].abort();
@@ -206,6 +216,9 @@ function updateAirlineDropdown(data, status, xhr) {
   $.each(data.results, function(index, value) {
     $("#airline_options").append("<li><a href=\"\" onclick=\"$('#airline').val(this.innerHTML); return false;\">" + value.name + " (" + value.iata + ")" + "</a></li>");
   });
+  if(data.results.length == 0) {
+    $("#airline_options").append("<li><a href=\"\" onclick=\"return false;\"><i>None Listed</i></a></li>");
+  };  
 }
 
 function updateCityDropdown(data, status, xhr) {
@@ -214,6 +227,9 @@ function updateCityDropdown(data, status, xhr) {
   $.each(data.results, function(index, value) {
     $("#city_options").append("<li><a href=\"\" onclick=\"$('#city').val(this.innerHTML); return false;\">" + value.name + " (" + value.iata_faa + ")" + "</a></li>");
   });
+  if(data.results.length == 0) {
+    $("#city_options").append("<li><a href=\"\" onclick=\"return false;\"><i>None Listed</i></a></li>");
+  };  
 }
 
 function showCityPopup(evt) {
