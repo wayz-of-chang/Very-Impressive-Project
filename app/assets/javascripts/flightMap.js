@@ -48,12 +48,12 @@ function init() {
 
     //map.zoomToMaxExtent();
 
-	var lonlat = new OpenLayers.LonLat(-1.788, 53.571).transform(
+	/*var lonlat = new OpenLayers.LonLat(-1.788, 53.571).transform(
             new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
             new OpenLayers.Projection("EPSG:900913") // to Spherical Mercator
           );
 	
-	var location = new OpenLayers.Geometry.Point(-1.788, 53.571).transform("EPSG:4326", "EPSG:900913");
+	var location = new OpenLayers.Geometry.Point(-1.788, 53.571).transform("EPSG:4326", "EPSG:900913");*/
 
     cities = new OpenLayers.Layer.Vector( "Cities", {
 		styleMap: new OpenLayers.StyleMap({
@@ -61,7 +61,7 @@ function init() {
 		  graphicWidth: 20, graphicHeight: 24, graphicYOffset: -24,
 		  strokeColor: "red",
 		  title: '${tooltip}'})});
-    cities.addFeatures([new OpenLayers.Feature.Vector(location, {tooltip: 'marker'})]);
+    //cities.addFeatures([new OpenLayers.Feature.Vector(location, {tooltip: 'marker'})]);
 	flights = new OpenLayers.Layer.Vector("Flights");
         var randomColorStyle = new OpenLayers.Style(OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style["default"]));
         var selectColorStyle = new OpenLayers.Style(OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style["select"]));
@@ -87,8 +87,8 @@ function init() {
     map.addLayer(flights);
 	map.addLayer(cities);
 	
-	/*var selectControl = new OpenLayers.Control.SelectFeature(
-		  [timezones, cities, flights], 
+	var selectControl = new OpenLayers.Control.SelectFeature(
+		  [cities, flights]/*, 
 		  {
 		    hover: true, 
 			eventListeners: {
@@ -96,10 +96,13 @@ function init() {
 			  featurehighlighted: function(evt){},
 			  featureunhighlighted: function(evt){}
 			}
-		  });
+		  }*/);
 		  
 	map.addControl(selectControl);
-	selectControl.activate();*/
+	selectControl.activate();
+	
+	cities.events.on({featureselected: showCityPopup});
+	flights.events.on({featureselected: showFlightPopup});
 	
 	$("#airline").keyup(function (evt) {
 	  if(evt.which < 32) 
@@ -179,7 +182,7 @@ function updateMap(data, status, xhr) {
   $.each(data.airports, function(index, value) {
     var longitude = parseFloat(value.longitude);
 	var latitude = parseFloat(value.latitude);
-	features.push(new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Point(longitude, latitude).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject()), {tooltip: value.name + ' (' + value.iata_faa + ')'}));
+	features.push(new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Point(longitude, latitude).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject()), {tooltip: value.name + ' (' + value.iata_faa + ')', city: value.city, country: value.country, iata: value.iata_faa, name: value.name, timezone: value.timezone, idairports: value.idairports}));
 	city_long_lats[value.iata_faa] = {point: new OpenLayers.Geometry.Point(longitude, latitude), "longitude": longitude, "latitude": latitude};
 	console.log(longitude + " " + latitude);
   });
@@ -211,6 +214,39 @@ function updateCityDropdown(data, status, xhr) {
   $.each(data.results, function(index, value) {
     $("#city_options").append("<li><a href=\"\" onclick=\"$('#city').val(this.innerHTML); return false;\">" + value.name + " (" + value.iata_faa + ")" + "</a></li>");
   });
+}
+
+function showCityPopup(evt) {
+  var feature = evt.feature;
+  console.log(feature);
+  $.ajax({url: '/map/popup', 
+    type: "POST",
+	dataType: "json",
+	data: { airline: $("#airline").val(), 
+	  city: $("#city").val(), 
+	  "feature": feature.data,
+	  type: "city"
+	}
+  }).done(function(data, status, xhr) {
+    console.log(data);
+	var contents = "<h4>" + data.feature.name + " (" + data.feature.iata + ")</h4>" + data.feature.city + ", " + data.feature.country + " (Timezone: " + data.feature.timezone + ")<br/><table class=\"table table-striped table-bordered table-condensed table-responsive\"><tr>" + (data.airline > '' ? "" : "<th>Airlines</th>") + "<th>To</th><th>From</th></tr>";
+    $.each(data.results, function(index, value) {
+	  contents = contents + "<tr>" + (data.airline > '' ? "" : "<td>" + value.airline + "</td>") + "<td>" + (data.feature.idairports == (value.source_id + "") ? "" : value.source) + "</td><td>" + (data.feature.idairports == (value.destination_id + "") ? "" : value.destination) + "</td></tr>";
+	});
+	contents = contents + "</table>";
+	var popup = new OpenLayers.Popup.Anchored("cityPopup", feature.geometry.getBounds().getCenterLonLat(), null, contents, null, true);
+	popup.autoSize = true;
+	popup.maxSize = new OpenLayers.Size(400, 400);
+    map.addPopup(popup);
+    $('#loading').removeClass('in');
+  }).fail(function(data, status, xhr) {
+	console.log('Error Encountered When Retrieving Data');
+  });
+}
+
+function showFlightPopup(evt) {
+  var feature = evt.feature;
+  console.log(feature);
 }
 
 var earth_radius = 6371.11;           // in km
