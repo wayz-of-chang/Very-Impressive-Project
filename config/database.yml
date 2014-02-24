@@ -29,3 +29,11 @@ production:
   timeout: 5000
   username: fitnesse
   password: fitnesse
+
+heroku:
+  adapter: mysql
+  database: heroku_4d7743d30e9ebfa
+  pool: 10
+  timeout: 5000
+  username: bbd88709af8fa1
+  password: f89cd470
