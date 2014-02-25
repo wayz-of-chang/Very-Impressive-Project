@@ -12,7 +12,7 @@ function init() {
 
     map = new OpenLayers.Map({
       div: "map",
-	  layers: [new OpenLayers.Layer.OSM("Map Quest", "/tiles/${z}/${x}/${y}.png", {
+	  layers: [new OpenLayers.Layer.OSM("MapQuest", "http://otile1.mqcdn.com/tiles/1.0.0/map/${z}/${x}/${y}.jpg", {
 		resolutions: [156543.03390625, 78271.516953125, 39135.7584765625,
                       19567.87923828125, 9783.939619140625, 4891.9698095703125,
                       2445.9849047851562, 1222.9924523925781, 611.4962261962891],
