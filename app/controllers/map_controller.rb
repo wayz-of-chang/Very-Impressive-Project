@@ -1,8 +1,8 @@
 require 'pp'
 class MapController < ApplicationController
   def index
-    @airlines = Airline.where(:active=>'Y').where.not(:iata=>'').where.not(:iata=>'-').order(:name).limit(100)
-	@cities = Airport.group(:longitude, :latitude).limit(100)
+    @airlines = Airline.where(:active=>'Y').where.not(:iata=>'').where.not(:iata=>'-').order(:name).limit(50)
+	@cities = Airport.group(:longitude, :latitude).limit(50)
   end
   
   def find_airline(airline)
@@ -13,7 +13,7 @@ class MapController < ApplicationController
 	end
 	return toReturn unless airline > ''
 	if index = airline.index(/\s\(.+?\)/)
-	  toReturn = Airline.where(:active=>'Y').where.not(:iata=>'').where.not(:iata=>'-').where("name REGEXP :airline", {:airline => airline[0...index]}).limit(1)
+	  toReturn = Airline.where(:active=>'Y').where.not(:iata=>'').where.not(:iata=>'-').where("iata REGEXP :airline", {:airline => airline[index..-1]}).limit(1)
 	else
 	  toReturn = Airline.where(:active=>'Y').where.not(:iata=>'').where.not(:iata=>'-').where((airline.size > 2 ? "name REGEXP :airline" : "iata REGEXP :airline"), {:airline => airline}).limit(1)
 	end
