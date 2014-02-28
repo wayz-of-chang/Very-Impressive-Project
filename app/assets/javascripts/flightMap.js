@@ -161,6 +161,7 @@ function init() {
 	    updateAirlineDropdown(data, status, xhr);
         $('#loading').removeClass('in');
 	  }).fail(function(data, status, xhr) {
+        $('#loading').removeClass('in');
 	    console.log("Error Encountered When Retrieving Airline List");
 	  });
 	});
@@ -183,6 +184,7 @@ function init() {
 	    updateCityDropdown(data, status, xhr);
         $('#loading').removeClass('in');
 	  }).fail(function(data, status, xhr) {
+        $('#loading').removeClass('in');
 	    console.log("Error Encountered When Retrieving Airport List");
 	  });
 	});
@@ -215,6 +217,7 @@ function retrieveMap() {
 	updateMap(data, status, xhr);
     $('#loading').removeClass('in');
   }).fail(function(data, status, xhr) {
+    $('#loading').removeClass('in');
 	console.log('Error Encountered When Retrieving Data');
   });
 }
@@ -272,6 +275,7 @@ function updateCityDropdown(data, status, xhr) {
 }
 
 function showCityPopup(evt) {
+  $('#loading').addClass('in');
   var feature = evt.feature;
   console.log(feature);
   $.ajax({url: '/map/popup', 
@@ -297,11 +301,13 @@ function showCityPopup(evt) {
     map.addPopup(popup);
     $('#loading').removeClass('in');
   }).fail(function(data, status, xhr) {
+    $('#loading').removeClass('in');
 	console.log('Error Encountered When Retrieving Data');
   });
 }
 
 function showFlightPopup(evt) {
+  $('#loading').addClass('in');
   var feature = evt.feature;
   console.log(feature);
   $.ajax({url: '/map/popup', 
@@ -327,6 +333,7 @@ function showFlightPopup(evt) {
     map.addPopup(popup);
     $('#loading').removeClass('in');
   }).fail(function(data, status, xhr) {
+    $('#loading').removeClass('in');
 	console.log('Error Encountered When Retrieving Data');
   });
 }
