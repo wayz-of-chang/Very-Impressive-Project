@@ -16,9 +16,9 @@
 	    <div class="input-group" id="airline_dropdown">
 	    <input type="text" class="form-control" placeholder="Airline" name="airline" id="airline" autocomplete="off" data-toggle="dropdown">
         <ul class="dropdown-menu" id="airline_options">		
-		    <li><a href="" onclick="$('#airline').val(''); return false;">All (Default)</a></li>
+		    <li><a href="" onclick="$('#airline').val(''); $('#idairlines').val(''); return false;">All (Default)</a></li>
 		  <% @airlines.each do |airline| %>
-		    <li><a href="" onclick="$('#airline').val(this.innerHTML); return false;"><%= airline.name %> (<%= airline.iata %>)</a></li>
+		    <li><a href="" onclick="$('#airline').val(this.innerHTML); $('#idairlines').val('<%= airline.idairlines %>'); return false;"><%= airline.name %> (<%= airline.iata %>)</a></li>
 	      <% end %>
 		</ul>
 		</div>
@@ -27,15 +27,17 @@
 	    <div class="input-group" id="city_dropdown">
 	    <input type="text" class="form-control" placeholder="City" name="city" id="city" autocomplete="off" data-toggle="dropdown">
         <ul class="dropdown-menu" id="city_options">		
-		    <li><a href="" onclick="$('#city').val(''); return false;">All (Default)</a></li>
+		    <li><a href="" onclick="$('#city').val(''); $('#idairports').val(''); return false;">All (Default)</a></li>
 		  <% @cities.each do |city| %>
-		    <li><a href="" onclick="$('#city').val(this.innerHTML); return false;"><%= city.name %> (<%= city.iata_faa %>)</a></li>
+		    <li><a href="" onclick="$('#city').val(this.innerHTML); $('#idairports').val('<%= city.idairports %>'); return false;"><%= city.name %> (<%= city.iata_faa %>)</a></li>
 	      <% end %>
 		</ul>
 		</div>
 	  </div>
 	  <button type="submit" class="btn btn-default" onclick="retrieveMap(); return false;">Submit</button>
 	  <i class="icon-spinner icon-spin icon-large fade" id="loading" ></i>
+	  <input type="hidden" name="idairlines" id="idairlines" />
+	  <input type="hidden" name="idairports" id="idairports" />
 	</form>
   </div>
   </div>

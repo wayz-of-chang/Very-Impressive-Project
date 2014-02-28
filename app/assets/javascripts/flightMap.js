@@ -4,6 +4,7 @@ var scaleH = document.documentElement.clientHeight;
 var cities;
 var flights;
 var timezones;
+var selectControl;
 
 var xhr_list = {};
 
@@ -12,7 +13,7 @@ function init() {
 
     map = new OpenLayers.Map({
       div: "map",
-	  layers: [new OpenLayers.Layer.OSM("MapQuest", "http://otile1.mqcdn.com/tiles/1.0.0/map/${z}/${x}/${y}.jpg", {
+	  layers: [new OpenLayers.Layer.OSM("Map Quest", "/tiles/${z}/${x}/${y}.png", {
 		resolutions: [156543.03390625, 78271.516953125, 39135.7584765625,
                       19567.87923828125, 9783.939619140625, 4891.9698095703125,
                       2445.9849047851562, 1222.9924523925781, 611.4962261962891],
@@ -56,7 +57,20 @@ function init() {
 	var location = new OpenLayers.Geometry.Point(-1.788, 53.571).transform("EPSG:4326", "EPSG:900913");*/
 
     cities = new OpenLayers.Layer.Vector( "Cities", {
-		styleMap: new OpenLayers.StyleMap({
+		styleMap: new OpenLayers.StyleMap({'default': new OpenLayers.Style({
+		  //externalGraphic: '/img/marker.png',
+		  //graphicWidth: 20, graphicHeight: 24, graphicYOffset: -24,
+		  label: "\uf072",
+		  fontFamily: "FontAwesome",
+		  fontSize: 24,
+		  fontColor: "dimgray",
+		  strokeColor: "blue",
+		  pointRadius: 10,
+		  fillOpacity: 0,
+		  strokeOpacity: 0,
+		  cursor: "pointer",
+		  title: '${tooltip}'}), 
+		  'select': new OpenLayers.Style({
 		  //externalGraphic: '/img/marker.png',
 		  //graphicWidth: 20, graphicHeight: 24, graphicYOffset: -24,
 		  label: "\uf072",
@@ -68,14 +82,14 @@ function init() {
 		  fillOpacity: 0,
 		  strokeOpacity: 0,
 		  cursor: "pointer",
-		  title: '${tooltip}'})});
+		  title: '${tooltip}'})})});
     //cities.addFeatures([new OpenLayers.Feature.Vector(location, {tooltip: 'marker'})]);
 	flights = new OpenLayers.Layer.Vector("Flights");
         var randomColorStyle = new OpenLayers.Style(OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style["default"]));
         var selectColorStyle = new OpenLayers.Style(OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style["select"]));
 
         try{
-            flights.styleMap = new OpenLayers.StyleMap({'default':{fillOpacity: 0.5, fillColor: "blue", strokeWidth: 3, strokeColor: "blue", pointRadius: 3}, 'select':{fillOpacity: 0.5, fillColor: 'yellow', strokeWidth: 2, strokeColor: 'yellow', pointRadius: 5}});
+            flights.styleMap = new OpenLayers.StyleMap({'default':new OpenLayers.Style({fillOpacity: 0.5, fillColor: "lavender", strokeWidth: 2, strokeColor: "limegreen", pointRadius: 3}), 'select':new OpenLayers.Style({fillOpacity: 0.5, fillColor: 'yellow', strokeWidth: 3, strokeColor: 'yellow', pointRadius: 3, cursor: "pointer"})});
         }catch(err){console.log(err)};
 
     flights.setVisibility(true);
@@ -83,10 +97,11 @@ function init() {
 	    strategies: [new OpenLayers.Strategy.Fixed()], 
 		protocol: new OpenLayers.Protocol.HTTP({
 		  url: "kml/ne_10m_time_zones.kml",
+		  //url: "kml/timezones.kml",
 		  format: new OpenLayers.Format.KML({
 		    extractStyles: true,
 			extractAttributes: true,
-			maxDepth: 2
+			maxDepth: 4
 		  })
 		})
 	  });
@@ -95,26 +110,43 @@ function init() {
     map.addLayer(flights);
 	map.addLayer(cities);
 	
-	var selectControl = new OpenLayers.Control.SelectFeature(
-		  [cities, flights]/*, 
+	selectControl = new OpenLayers.Control.SelectFeature(
+		  [cities, flights], 
 		  {
-		    hover: true, 
+		    /*hover: true, 
 			eventListeners: {
 			  beforefeaturehighlighted: function(evt){var popup = new OpenLayers.Popup(null, evt.feature.geometry.bounds.getCenterLonLat(), new OpenLayers.Size(200, 200), evt.feature.data.name, false); map.addPopup(popup, true); popup.updateSize();},
 			  featurehighlighted: function(evt){},
 			  featureunhighlighted: function(evt){}
+			}*/
+		  });
+	
+	hoverControl = new OpenLayers.Control.SelectFeature(
+	      [timezones],
+		  {
+		    hover: true,
+			highlightOnly: true,
+			renderIntent: "temporary",
+			eventListeners: {
+			  featurehighlighted: function(evt){console.log(evt);var popup = new OpenLayers.Popup(null, evt.feature.geometry.bounds.getCenterLonLat(), new OpenLayers.Size(200, 100), evt.feature.data.name, false); map.addPopup(popup, true); popup.updateSize();}
 			}
-		  }*/);
+		  }
+	);
 		  
 	map.addControl(selectControl);
+	map.addControl(hoverControl);
+	
 	selectControl.activate();
+	//hoverControl.activate();
 	
 	cities.events.on({featureselected: showCityPopup});
 	flights.events.on({featureselected: showFlightPopup});
+	timezones.events.on({featureselected: function(evt){console.log(evt);var popup = new OpenLayers.Popup(null, evt.feature.geometry.bounds.getCenterLonLat(), new OpenLayers.Size(200, 100), evt.feature.data.name, false); map.addPopup(popup, true); popup.updateSize();}});
 	
 	$("#airline").keyup(function (evt) {
 	  if(evt.which < 32 && evt.which != 8) 
 	    return false;
+	  $("#idairlines").val('');
 	  $("#airline_dropdown").addClass("open");
       $('#loading').addClass('in');
 	  if(xhr_list['airline_list'] && xhr_list['airline_list'].readyState != 4)
@@ -136,6 +168,7 @@ function init() {
 	$("#city").keyup(function (evt) {
 	  if(evt.which < 32 && evt.which != 8) 
 	    return false;
+	  $("#idairports").val('');
 	  $("#city_dropdown").addClass("open");
       $('#loading').addClass('in');
 	  if(xhr_list['city_list'] && xhr_list['city_list'].readyState != 4)
@@ -174,7 +207,9 @@ function retrieveMap() {
     type: "POST",
 	dataType: "json",
 	data: { airline: $("#airline").val(), 
-	  city: $("#city").val()
+	  city: $("#city").val(),
+	  idairlines: $("#idairlines").val(),
+	  idairports: $("#idairports").val()
 	}
   }).done(function(data, status, xhr) {
 	updateMap(data, status, xhr);
@@ -185,6 +220,8 @@ function retrieveMap() {
 }
 
 function updateMap(data, status, xhr) {
+  while( map.popups.length )
+    map.removePopup(map.popups[0]);
   cities.removeAllFeatures();
   flights.removeAllFeatures();
   var features = [];
@@ -201,7 +238,7 @@ function updateMap(data, status, xhr) {
     var source = city_long_lats[value.source];
 	var destination = city_long_lats[value.destination];
 	if(source != null && destination != null)	
-	  show_orthodrome(source.point, destination.point, flights);
+	  show_orthodrome(source.point, destination.point, flights, {'source': value.source, 'destination': value.destination, 'id': value.idroutes});
 	else
 	  console.log("Route from " + value.source + " to " + value.destination + " is invalid");
   });
@@ -212,24 +249,26 @@ function updateAirlineDropdown(data, status, xhr) {
   console.log(data);
   $("#airline_options").empty();
   if($('#airline').val() == "")
-    $("#airline_options").append("<li><a href=\"\" onclick=\"$('#airline').val(this.innerHTML); return false;\">All (Default)</a></li>");
-  $.each(data.results, function(index, value) {
-    $("#airline_options").append("<li><a href=\"\" onclick=\"$('#airline').val(this.innerHTML); return false;\">" + value.name + " (" + value.iata + ")" + "</a></li>");
-  });
-  if(data.results.length == 0) {
+    $("#airline_options").append("<li><a href=\"\" onclick=\"$('#airline').val(this.innerHTML); $('#idairlines').val(''); return false;\"><i>All (Default)</i></a></li>");
+  else
+  if(data.results.length == 0) 
     $("#airline_options").append("<li><a href=\"\" onclick=\"return false;\"><i>None Listed</i></a></li>");
-  };  
+  $.each(data.results, function(index, value) {
+    $("#airline_options").append("<li><a href=\"\" onclick=\"$('#airline').val(this.innerHTML); $('#idairlines').val('" + value.idairlines + "'); return false;\">" + value.name + " (" + value.iata + ")" + "</a></li>");
+  });
 }
 
 function updateCityDropdown(data, status, xhr) {
   console.log(data);
   $("#city_options").empty();
-  $.each(data.results, function(index, value) {
-    $("#city_options").append("<li><a href=\"\" onclick=\"$('#city').val(this.innerHTML); return false;\">" + value.name + " (" + value.iata_faa + ")" + "</a></li>");
-  });
-  if(data.results.length == 0) {
+  if($('#city').val() == "")
+    $("#city_options").append("<li><a href=\"\" onclick=\"$('#city').val(this.innerHTML); $('#idairports').val(''); return false;\"><i>All (Default)</i></a></li>");
+  else
+  if(data.results.length == 0) 
     $("#city_options").append("<li><a href=\"\" onclick=\"return false;\"><i>None Listed</i></a></li>");
-  };  
+  $.each(data.results, function(index, value) {
+    $("#city_options").append("<li><a href=\"\" onclick=\"$('#city').val(this.innerHTML); $('#idairports').val('" + value.idairports + "'); return false;\">" + value.name + " (" + value.iata_faa + ")" + "</a></li>");
+  });
 }
 
 function showCityPopup(evt) {
@@ -240,6 +279,8 @@ function showCityPopup(evt) {
 	dataType: "json",
 	data: { airline: $("#airline").val(), 
 	  city: $("#city").val(), 
+	  idairlines: $("#idairlines").val(),
+	  idairports: $("#idairports").val(),
 	  "feature": feature.data,
 	  type: "city"
 	}
@@ -250,7 +291,7 @@ function showCityPopup(evt) {
 	  contents = contents + "<tr>" + (data.airline > '' ? "" : "<td>" + value.airline + "</td>") + "<td>" + (data.feature.idairports == (value.source_id + "") ? "" : value.source) + "</td><td>" + (data.feature.idairports == (value.destination_id + "") ? "" : value.destination) + "</td></tr>";
 	});
 	contents = contents + "</table>";
-	var popup = new OpenLayers.Popup.Anchored("cityPopup", feature.geometry.getBounds().getCenterLonLat(), null, contents, null, true);
+	var popup = new OpenLayers.Popup.Anchored("cityPopup", feature.geometry.getBounds().getCenterLonLat(), null, contents, null, true, function(evt) {selectControl.unselect(feature);this.hide()});
 	popup.autoSize = true;
 	popup.maxSize = new OpenLayers.Size(400, 400);
     map.addPopup(popup);
@@ -263,6 +304,31 @@ function showCityPopup(evt) {
 function showFlightPopup(evt) {
   var feature = evt.feature;
   console.log(feature);
+  $.ajax({url: '/map/popup', 
+    type: "POST",
+	dataType: "json",
+	data: { airline: $("#airline").val(), 
+	  city: $("#city").val(), 
+	  idairlines: $("#idairlines").val(),
+	  idairports: $("#idairports").val(),
+	  "feature": feature.data,
+	  type: "route"
+	}
+  }).done(function(data, status, xhr) {
+    console.log(data);
+	var contents = "<table class=\"table table-striped table-bordered table-condensed table-responsive\"><tr>" + (data.airline > '' ? "" : "<th>Airlines</th>") + "<th>From</th><th>To</th></tr>";
+    $.each(data.results, function(index, value) {
+	  contents = contents + "<tr>" + (data.airline > '' ? "" : "<td>" + value.airline + "</td>") + "<td>" + value.source + "</td><td>" + value.destination + "</td></tr>";
+	});
+	contents = contents + "</table>";
+	var popup = new OpenLayers.Popup.Anchored("routePopup", feature.geometry.getBounds().getCenterLonLat(), null, contents, null, true, function(evt) {selectControl.unselect(feature);this.hide()});
+	popup.autoSize = true;
+	popup.maxSize = new OpenLayers.Size(400, 400);
+    map.addPopup(popup);
+    $('#loading').removeClass('in');
+  }).fail(function(data, status, xhr) {
+	console.log('Error Encountered When Retrieving Data');
+  });
 }
 
 var earth_radius = 6371.11;           // in km
@@ -298,7 +364,7 @@ function GreatCircleLine(pOrigin, pDest)
     return(ls);
 }
 
-function show_orthodrome(pt1, pt2, flights)
+function show_orthodrome(pt1, pt2, flights, properties)
 {
     var pOrigin = new geo.Point(pt1.x, pt1.y);
     var pDest = new geo.Point(pt2.x, pt2.y);
@@ -311,12 +377,14 @@ function show_orthodrome(pt1, pt2, flights)
     if (orthodromeFlag==true)
         theStyle[theStyle.length] = null;
 
-    theStyle[theStyle.length] = {strokeColor : vectors.styleMap.styles["default"].defaultStyle.strokeColor, strokeWidth:2};
-    theStyle[theStyle.length] = {strokeColor : vectors.styleMap.styles["default"].defaultStyle.strokeColor, strokeWidth:2};
+    //theStyle[theStyle.length] = {strokeColor : vectors.styleMap.styles["default"].defaultStyle.strokeColor, strokeWidth:2};
+    //theStyle[theStyle.length] = {strokeColor : vectors.styleMap.styles["default"].defaultStyle.strokeColor, strokeWidth:2};
 
     // Create a feature from the waypoints LineString and display on map
     var route = [];
     for (var i=0; i<ls.length; i++)
-     	route[i] = new OpenLayers.Feature.Vector (ls[i], null, theStyle[i]);
+     	route[i] = new OpenLayers.Feature.Vector(ls[i], properties);
     vectors.addFeatures(route);
+	console.log(route);
+	return route;
 }

@@ -5,12 +5,13 @@ class MapController < ApplicationController
 	@cities = Airport.group(:longitude, :latitude).limit(50)
   end
   
-  def find_airline(airline)
+  def find_airline(airline, id)
     toReturn = nil
 	index = nil
 	if airline == "All (Default)"
 	  airline = ""
 	end
+	return Airline.find(id) if id > ''
 	return toReturn unless airline > ''
 	if index = airline.index(/\s\(.+?\)/)
 	  toReturn = Airline.where(:active=>'Y').where.not(:iata=>'').where.not(:iata=>'-').where("iata REGEXP :airline", {:airline => airline[index..-1]}).limit(1)
@@ -25,9 +26,10 @@ class MapController < ApplicationController
 	toReturn
   end
   
-  def find_city(city)
+  def find_city(city, id)
     toReturn = nil
     index = nil
+	return Airport.find(id) if id > ''
 	return nil unless city > ''
 	if index = city.index(/\s\(.+?\)/)
 	  toReturn = Airport.where("name REGEXP :city", {:city => city[0...index]}).limit(1)
@@ -45,8 +47,8 @@ class MapController < ApplicationController
   def populate_map
     puts "Airline: #{params[:airline]}"
 	puts "City: #{params[:city]}"
-	@airline = find_airline(params[:airline])
-	@city = find_city(params[:city])
+	@airline = find_airline(params[:airline], params[:idairlines])
+	@city = find_city(params[:city], params[:idairports])
 	@flights = []
 	@cities = []
 	if @airline.nil?
@@ -92,22 +94,22 @@ class MapController < ApplicationController
 	puts params[:type]
 	results = nil
 	if params[:type] == "city"
-	  results = populate_city_results(params[:airline], params[:city], params[:feature])
+	  results = populate_city_results(params[:airline], params[:idairlines], params[:city], params[:idairports], params[:feature])
 	else
-	  results = populate_route_results(params[:airline], params[:city], params[:feature])
+	  results = populate_route_results(params[:airline], params[:idairlines], params[:city], params[:idairports], params[:feature])
 	end
 	render :json => {:airline => params[:airline], :city => params[:city], :feature => params[:feature], :results => results}
   end
   
-  def populate_city_results(airline, city, feature)
-    @airline = find_airline(airline)
-	#@city = find_city(city)
+  def populate_city_results(airline, idairlines, city, idairports, feature)
+    @airline = find_airline(airline, idairlines)
+	@city = find_city(city, idairports)
 	@flights = []
 	@cities = []
-    #if @city.nil?
+    if @city.nil?
 	  @city = Airport.where(:iata_faa=>feature[:iata]).where(:name=>feature[:name]).limit(1)
 	  @city = @city.first unless @city.nil? || @city.empty?
-	#end
+	end
     if @airline.nil?
 	  @flights = Route.select("group_concat(airline SEPARATOR \",\") as airline, source, source_id, destination, destination_id").where("source_id = :city_id OR destination_id = :city_id", {:city_id=>@city.idairports}).where.not(:airline=>[nil,'']).group(:source, :destination)
 	  pp @flights
@@ -116,6 +118,22 @@ class MapController < ApplicationController
 	  @flights = Route.where("source_id = :city_id OR destination_id = :city_id", {:city_id=>@city.idairports}).where(:airline_id=>@airline.idairlines)
 	  pp @flights
 	  @cities = Airport.where(:idairports=>@flights.collect{ |flight| [flight.source_id, flight.destination_id] }.flatten.uniq)
+	end
+	@flights
+  end
+
+  def populate_route_results(airline, idairlines, city, idairports, feature)
+    @airline = find_airline(airline, idairlines)
+	@city = find_city(city, idairports)
+	@flights = []
+	@cities = []
+	@route = Route.find(feature[:id])
+    if @airline.nil?
+	  @flights = Route.select("group_concat(airline SEPARATOR \",\") as airline, source, source_id, destination, destination_id").where(:source_id=>[@route.source_id, @route.destination_id], :destination_id=>[@route.source_id, @route.destination_id]).where.not(:airline=>[nil,'']).group(:source, :destination)
+	  pp @flights
+	else
+	  @flights = Route.where(:source_id=>[@route.source_id, @route.destination_id], :destination_id=>[@route.source_id, @route.destination_id]).where(:airline_id=>@airline.idairlines)
+	  pp @flights
 	end
 	@flights
   end
