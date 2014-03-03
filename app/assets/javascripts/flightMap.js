@@ -5,6 +5,7 @@ var cities;
 var flights;
 var timezones;
 var selectControl;
+var timeZonePopup;
 
 var xhr_list = {};
 
@@ -20,6 +21,7 @@ function init() {
 		serverResolutions: [156543.03390625, 78271.516953125, 39135.7584765625,
                       19567.87923828125, 9783.939619140625, 4891.9698095703125,
                       2445.9849047851562, 1222.9924523925781, 611.4962261962891], transitionEffect: 'resize' }), 
+			   new OpenLayers.Layer.Google("Google", {type: google.maps.MapTypeId.HYBRID, numZoomLevels: 9}),
 			   new OpenLayers.Layer.OSM("OpenStreetMaps", null, {
 		resolutions: [156543.03390625, 78271.516953125, 39135.7584765625,
                       19567.87923828125, 9783.939619140625, 4891.9698095703125,
@@ -29,20 +31,11 @@ function init() {
                       2445.9849047851562, 1222.9924523925781, 611.4962261962891], transitionEffect: 'resize' }) 
 			  ],
 	  controls: [
-		new OpenLayers.Control.Navigation({
-          dragPanOptions: {
-              enableKinetic: true
-          }
-        }),
-		new OpenLayers.Control.TouchNavigation({
-          dragPanOptions: {
-              enableKinetic: true
-          }
-        }),
         new OpenLayers.Control.PanZoomBar(), 
 		new OpenLayers.Control.ScaleLine(), 
 		new OpenLayers.Control.LayerSwitcher() 
 	  ],
+	  restrictedExtent: [-20037508.34 * 2, -20037508.34, 20037508.34 * 2, 20037508.34],
 	  center: [0, 0],
 	  zoom: 3
     });
@@ -89,17 +82,30 @@ function init() {
         var selectColorStyle = new OpenLayers.Style(OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style["select"]));
 
         try{
-            flights.styleMap = new OpenLayers.StyleMap({'default':new OpenLayers.Style({fillOpacity: 0.5, fillColor: "lavender", strokeWidth: 2, strokeColor: "limegreen", pointRadius: 3}), 'select':new OpenLayers.Style({fillOpacity: 0.5, fillColor: 'yellow', strokeWidth: 3, strokeColor: 'yellow', pointRadius: 3, cursor: "pointer"})});
+            flights.styleMap = new OpenLayers.StyleMap({'default':new OpenLayers.Style({fillOpacity: 0.5, fillColor: "lavender", strokeWidth: 2, strokeColor: "limegreen", pointRadius: 3, cursor: "pointer"}), 'select':new OpenLayers.Style({fillOpacity: 0.5, fillColor: 'yellow', strokeWidth: 3, strokeColor: 'yellow', pointRadius: 3, cursor: "pointer"})});
         }catch(err){console.log(err)};
 
     flights.setVisibility(true);
 	timezones = new OpenLayers.Layer.Vector("Time Zones", {
+		styleMap: new OpenLayers.StyleMap({'default': new OpenLayers.Style({
+		  fontColor: "dimgray",
+		  strokeColor: "#DFB31B",
+		  strokeWidth: 1,
+		  fillOpacity: 0,
+		  strokeOpacity: 0.2}), 
+		  'select': new OpenLayers.Style({
+		  fontColor: "red",
+		  strokeColor: "blue",
+		  fillColor: "blue",
+		  pointRadius: 2,
+		  fillOpacity: 0.3,
+		  strokeOpacity: 0.5})}),
 	    strategies: [new OpenLayers.Strategy.Fixed()], 
 		protocol: new OpenLayers.Protocol.HTTP({
 		  url: "kml/ne_10m_time_zones.kml",
 		  //url: "kml/timezones.kml",
 		  format: new OpenLayers.Format.KML({
-		    extractStyles: true,
+		    extractStyles: false,
 			extractAttributes: true,
 			maxDepth: 4
 		  })
@@ -110,17 +116,6 @@ function init() {
     map.addLayer(flights);
 	map.addLayer(cities);
 	
-	selectControl = new OpenLayers.Control.SelectFeature(
-		  [cities, flights], 
-		  {
-		    /*hover: true, 
-			eventListeners: {
-			  beforefeaturehighlighted: function(evt){var popup = new OpenLayers.Popup(null, evt.feature.geometry.bounds.getCenterLonLat(), new OpenLayers.Size(200, 200), evt.feature.data.name, false); map.addPopup(popup, true); popup.updateSize();},
-			  featurehighlighted: function(evt){},
-			  featureunhighlighted: function(evt){}
-			}*/
-		  });
-	
 	hoverControl = new OpenLayers.Control.SelectFeature(
 	      [timezones],
 		  {
@@ -128,20 +123,47 @@ function init() {
 			highlightOnly: true,
 			renderIntent: "temporary",
 			eventListeners: {
-			  featurehighlighted: function(evt){console.log(evt);var popup = new OpenLayers.Popup(null, evt.feature.geometry.bounds.getCenterLonLat(), new OpenLayers.Size(200, 100), evt.feature.data.name, false); map.addPopup(popup, true); popup.updateSize();}
+			  featurehighlighted: function(evt){console.log(evt);timeZonePopup.lonlat = new OpenLayers.LonLat(evt.feature.geometry.bounds.getCenterLonLat().lon, (map.getExtent().getCenterLonLat().lat > 0 ? map.getExtent().top - (map.getExtent().getHeight() * 0.1) : map.getExtent().bottom + (map.getExtent().getHeight() * 0.1)));timeZonePopup.updatePosition(); timeZonePopup.setContentHTML(evt.feature.data.description.replace(/<td>time_zone:<\/td>/,'').replace(/<tr><td>places:<\/td><td>.+?<\/td><\/tr>/,"")); timeZonePopup.show();console.log(evt.feature.geometry.bounds.getCenterLonLat().lon);console.log(map.getExtent().bottom);}
 			}
 		  }
 	);
-		  
-	map.addControl(selectControl);
-	map.addControl(hoverControl);
 	
+	timeZonePopup = new OpenLayers.Popup(null, new OpenLayers.LonLat(0,0), new OpenLayers.Size(100, 40), '', false); 
+	map.addPopup(timeZonePopup); 
+	timeZonePopup.hide();
+		  
+	selectControl = new OpenLayers.Control.SelectFeature(
+		  [cities, flights, timezones], 
+		  {
+		    /*hover: true, 
+			eventListeners: {
+			  featureover: function(evt) {if(evt.feature.layer.name != "Time Zones") {OpenLayers.Event.stop(evt, true);evt.feature.renderIntent = "default";return false;}}
+			  //beforefeaturehighlighted: function(evt){var popup = new OpenLayers.Popup(null, evt.feature.geometry.bounds.getCenterLonLat(), new OpenLayers.Size(200, 200), evt.feature.data.name, false); map.addPopup(popup, true); popup.updateSize();},
+			  //featurehighlighted: function(evt){},
+			  //featureunhighlighted: function(evt){}
+			}*/
+		  });
+	
+	map.addControl(hoverControl);
+	map.addControl(selectControl);
+	
+	hoverControl.activate();
 	selectControl.activate();
-	//hoverControl.activate();
+	
+	map.addControls([new OpenLayers.Control.Navigation({
+          dragPanOptions: {
+              enableKinetic: true
+          }
+        }),
+		new OpenLayers.Control.TouchNavigation({
+          dragPanOptions: {
+              enableKinetic: true
+          }
+        })]);
 	
 	cities.events.on({featureselected: showCityPopup});
 	flights.events.on({featureselected: showFlightPopup});
-	timezones.events.on({featureselected: function(evt){console.log(evt);var popup = new OpenLayers.Popup(null, evt.feature.geometry.bounds.getCenterLonLat(), new OpenLayers.Size(200, 100), evt.feature.data.name, false); map.addPopup(popup, true); popup.updateSize();}});
+	timezones.events.on({featureselected: function(evt) {selectControl.unselect(evt.feature);hoverControl.highlight(evt.feature);}});
 	
 	$("#airline").keyup(function (evt) {
 	  if(evt.which < 32 && evt.which != 8) 
@@ -225,6 +247,7 @@ function retrieveMap() {
 function updateMap(data, status, xhr) {
   while( map.popups.length )
     map.removePopup(map.popups[0]);
+  map.addPopup(timeZonePopup);
   cities.removeAllFeatures();
   flights.removeAllFeatures();
   var features = [];
