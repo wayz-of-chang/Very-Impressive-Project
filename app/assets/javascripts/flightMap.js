@@ -264,7 +264,7 @@ function updateMap(data, status, xhr) {
     var source = city_long_lats[value.source];
 	var destination = city_long_lats[value.destination];
 	if(source != null && destination != null)	
-	  show_orthodrome(source.point, destination.point, flights, {'source': value.source, 'destination': value.destination, 'id': value.idroutes});
+	  show_orthodrome(source.point, destination.point, flights, {'source': value.source, 'source_lat': source.latitude, 'destination': value.destination, 'destination_lat': destination.latitude, 'id': value.idroutes});
 	else
 	  console.log("Route from " + value.source + " to " + value.destination + " is invalid");
   });
@@ -313,7 +313,7 @@ function showCityPopup(evt) {
 	}
   }).done(function(data, status, xhr) {
     console.log(data);
-	var contents = "<h4>" + data.feature.name + " (" + data.feature.iata + ")</h4>" + data.feature.city + ", " + data.feature.country + " (Timezone: " + data.feature.timezone + ")<br/><table class=\"table table-striped table-bordered table-condensed table-responsive\"><tr>" + (data.airline > '' ? "" : "<th>Airlines</th>") + "<th>To</th><th>From</th></tr>";
+	var contents = "<h4>" + data.feature.name + " (" + data.feature.iata + ")</h4>" + data.feature.city + ", " + data.feature.country + " (Timezone: " + data.feature.timezone + ")<br/><table class=\"table table-striped table-bordered table-condensed table-responsive\" style=\"margin-bottom:0px;\"><tr>" + (data.airline > '' ? "" : "<th>Airlines</th>") + "<th>To</th><th>From</th></tr>";
     $.each(data.results, function(index, value) {
 	  contents = contents + "<tr>" + (data.airline > '' ? "" : "<td>" + value.airline + "</td>") + "<td>" + (data.feature.idairports == (value.source_id + "") ? "" : value.source) + "</td><td>" + (data.feature.idairports == (value.destination_id + "") ? "" : value.destination) + "</td></tr>";
 	});
@@ -345,12 +345,19 @@ function showFlightPopup(evt) {
 	}
   }).done(function(data, status, xhr) {
     console.log(data);
-	var contents = "<table class=\"table table-striped table-bordered table-condensed table-responsive\"><tr>" + (data.airline > '' ? "" : "<th>Airlines</th>") + "<th>From</th><th>To</th></tr>";
+	var contents = "<table class=\"table table-striped table-bordered table-condensed table-responsive\" style=\"margin-bottom:0px;\"><tr>" + (data.airline > '' ? "" : "<th>Airlines</th>") + "<th>From</th><th>To</th></tr>";
     $.each(data.results, function(index, value) {
 	  contents = contents + "<tr>" + (data.airline > '' ? "" : "<td>" + value.airline + "</td>") + "<td>" + value.source + "</td><td>" + value.destination + "</td></tr>";
 	});
 	contents = contents + "</table>";
-	var popup = new OpenLayers.Popup.Anchored("routePopup", feature.geometry.getBounds().getCenterLonLat(), null, contents, null, true, function(evt) {selectControl.unselect(feature);this.hide()});
+	var featureCenter = feature.geometry.getBounds().getCenterLonLat();
+	var featureLat = featureCenter.lat;
+	if(feature.data.source_lat > 0 && feature.data.destination_lat > 0)
+	  featureLat = feature.geometry.getBounds().top;
+	if(feature.data.source_lat < 0 && feature.data.destination_lat < 0)
+	  featureLat = feature.geometry.getBounds().bottom;
+	console.log(feature);
+	var popup = new OpenLayers.Popup.Anchored("routePopup", new OpenLayers.LonLat(featureCenter.lon, featureLat), null, contents, null, true, function(evt) {selectControl.unselect(feature);this.hide()});
 	popup.autoSize = true;
 	popup.maxSize = new OpenLayers.Size(400, 400);
     map.addPopup(popup);
