@@ -42,3 +42,20 @@
   </div>
   </div>
 </nav>
+<button type="button" id="browser-support" class="btn btn-default" style="position:fixed; z-index: 1000; right:20px; bottom:20px;" onclick="parseModernizerResults();return false;"></button>
+<div id="browser-modal" class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Browser Support</h4>
+      </div>
+      <div id="browser-modal-contents" class="modal-body" style="overflow-y:auto;height:50%;">
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
