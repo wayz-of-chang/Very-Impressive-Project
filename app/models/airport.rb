@@ -28,7 +28,11 @@ class Airport < ActiveRecord::Base
   end  
   
   def self.find_from_flights(flights, airline_id)
-    Airport.select("#{Airport.table_name}.*, count(#{Airport.table_name}.idairports) as airport_size").joins(:routes_out, :routes_in).where(:idairports=>flights.collect{ |flight| [flight.source_id, flight.destination_id] }.flatten.uniq, :routes => {:airline_id => airline_id}, :routes_ins_airports => {:airline_id => airline_id}).group(:idairports)
+    if(airline_id)
+      Airport.select("#{Airport.table_name}.*, count(#{Airport.table_name}.idairports) as airport_size").joins(:routes_out, :routes_in).where(:idairports=>flights.collect{ |flight| [flight.source_id, flight.destination_id] }.flatten.uniq, :routes => {:airline_id => airline_id}, :routes_ins_airports => {:airline_id => airline_id}).group(:idairports)
+	else
+      Airport.select("#{Airport.table_name}.*, count(#{Airport.table_name}.idairports) as airport_size").joins(:routes_out, :routes_in).where(:idairports=>flights.collect{ |flight| [flight.source_id, flight.destination_id] }.flatten.uniq).group(:idairports)
+	end
   end
   
   def self.match(input)
