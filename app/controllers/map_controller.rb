@@ -15,11 +15,11 @@ class MapController < ApplicationController
 	    @cities = Airport.default_list(nil)
 	  else
 	    @flights = Route.where(:airline_id=>@airline.idairlines)
-	    @cities = Airport.find_from_flights(@flights)
+	    @cities = Airport.find_from_flights(@flights, @airline.idairlines)
 	  end
 	else
 	  @flights = Route.find_routes(@city.idairports, :or, @airline)
-	  @cities = Airport.find_from_flights(@flights)
+	  @cities = Airport.find_from_flights(@flights, @airline.idairlines)
 	end
 	render :json => {:airline => @airline, :city => @city, :airports => @cities, :flights => @flights}
   end

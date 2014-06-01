@@ -48,10 +48,10 @@ function init() {
 		  //graphicWidth: 20, graphicHeight: 24, graphicYOffset: -24,
 		  label: "\uf072",
 		  fontFamily: "FontAwesome",
-		  fontSize: 24,
+		  fontSize: "${airport_size}",
 		  fontColor: "#535454",
 		  strokeColor: "blue",
-		  pointRadius: 10,
+		  pointRadius: "${radius_size}",
 		  fillOpacity: 0,
 		  strokeOpacity: 0,
 		  cursor: "pointer",
@@ -61,10 +61,10 @@ function init() {
 		  //graphicWidth: 20, graphicHeight: 24, graphicYOffset: -24,
 		  label: "\uf072",
 		  fontFamily: "FontAwesome",
-		  fontSize: 24,
+		  fontSize: "${airport_size}",
 		  fontColor: "#989899",
 		  strokeColor: "blue",
-		  pointRadius: 10,
+		  pointRadius: "${radius_size}",
 		  fillOpacity: 0,
 		  strokeOpacity: 0,
 		  cursor: "pointer",
@@ -278,7 +278,8 @@ function updateMap(data, status, xhr) {
   $.each(data.airports, function(index, value) {
     var longitude = parseFloat(value.longitude);
 	var latitude = parseFloat(value.latitude);
-	features.push(new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Point(longitude, latitude).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject()), {tooltip: value.name + ' (' + value.iata_faa + ')', city: value.city, country: value.country, iata: value.iata_faa, name: value.name, timezone: value.timezone, idairports: value.idairports}));
+	var pointSize = Math.ceil(Math.log(value.airport_size) + 5);
+	features.push(new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Point(longitude, latitude).transform(new OpenLayers.Projection("EPSG:4326"), map.getProjectionObject()), {tooltip: value.name + ' (' + value.iata_faa + ')', city: value.city, country: value.country, iata: value.iata_faa, name: value.name, timezone: value.timezone, idairports: value.idairports, airport_size: pointSize * 1.5, radius_size: pointSize}));
 	city_long_lats[value.iata_faa] = {point: new OpenLayers.Geometry.Point(longitude, latitude), "longitude": longitude, "latitude": latitude};
   });
   cities.addFeatures(features);
